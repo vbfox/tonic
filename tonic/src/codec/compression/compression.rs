@@ -7,7 +7,7 @@ use crate::metadata::MetadataMap;
 use bytes::{Buf, BytesMut};
 use http::HeaderValue;
 use std::fmt::Debug;
-use tracing::debug;
+use tracing::{debug, info};
 
 pub(crate) const BUFFER_SIZE: usize = 8 * 1024;
 
@@ -56,8 +56,11 @@ impl Compression {
             .and_then(|v| v.to_str().ok())
             .unwrap_or("");
 
+        info!(%accept_encoding_header, "response_from_metadata::accept_encoding_header");
         let parsed = parse_accept_encoding_header(accept_encoding_header);
+        info!(?parsed, "response_from_metadata::parsed");
         let compressor = first_supported_compressor(&parsed);
+        info!(compressor = ?compressor.map(|c| c.name()).unwrap_or(""), "response_from_metadata::compressor");
         Compression { compressor }
     }
 
@@ -68,8 +71,11 @@ impl Compression {
             .and_then(|v| v.to_str().ok())
             .unwrap_or("");
 
+        info!(%accept_encoding_header, "response_from_headers::accept_encoding_header");
         let parsed = parse_accept_encoding_header(accept_encoding_header);
+        info!(?parsed, "response_from_headers::parsed");
         let compressor = first_supported_compressor(&parsed);
+        info!(compressor = ?compressor.map(|c| c.name()).unwrap_or(""), "response_from_headers::compressor");
         Compression { compressor }
     }
 
